@@ -1,0 +1,28 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Bank Guarantee",
+  "enabled": 0,
+  "modified": "2023-03-21 13:15:56.982902",
+  "name": "Bank Guarantee-Form",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "script": "frappe.ui.form.on('Bank Guarantee', {\n    validate: function(frm) {\n\t\tcalculate_costing(frm);\n\t\t\n\t\tif(frm.doc.project){\n\t\t    frappe.db.set_value(\"Project\", frm.doc.project, \"bank_guarantee\", frm.doc.name);\n\t\t}\n\t},\n\t\n\tamount: function(frm) {\n\t\tcalculate_costing(frm);\n\t},\n\t\n\tbank_cover_percentage: function(frm) {\n\t\tcalculate_costing(frm);\n\t},\n\t\n\tcover_commission_percentage: function(frm) {\n\t\tcalculate_costing(frm);\n\t},\n\t\n\tstart_date: function(frm) {\n\t\tvar days = frappe.datetime.get_diff(frm.doc.guarantee_end_date, frm.doc.start_date);\n\t\tcur_frm.set_value(\"validity_in_days\", days);\n\t},\n\t\n\tguarantee_end_date: function(frm) {\n\t\tvar days = frappe.datetime.get_diff(frm.doc.guarantee_end_date, frm.doc.start_date);\n\t\tcur_frm.set_value(\"validity_in_days\", days);\n\t\t\n\t},\n});\n\nfunction calculate_costing(frm) {\n    var bank_cover_amount = (flt(frm.doc.amount) * (flt(frm.doc.bank_cover_percentage) * 0.01));\n    frm.set_value('company_cover_percentage', 100 - flt(frm.doc.bank_cover_percentage));\n    frm.set_value('bank_cover_amount', flt(bank_cover_amount));\n    frm.set_value('company_cover_amount', flt(frm.doc.amount) - flt(bank_cover_amount))\n    \n    var cover_commission_amount = flt(frm.doc.bank_cover_amount) * flt(frm.doc.cover_commission_percentage) * 0.01\n    frm.set_value('cover_commission', flt(cover_commission_amount));\n}",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Project",
+  "enabled": 1,
+  "modified": "2023-03-21 14:37:30.698534",
+  "name": "Project-Form",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "script": "frappe.ui.form.on('Project', {\n\n\tproject_amount: function(frm) {\n\t\tcalculate_costing(frm);\n\t},\n\n\ttax: function(frm) {\n\t\tcalculate_costing(frm);\n\t},\n\n\testimated_costing: function(frm) {\n\t\tcalculate_costing(frm);\n\t},\n\t\n\texpected_start_date: function(frm) {\n\t\tvar days = frappe.datetime.get_diff(frm.doc.expected_end_date, frm.doc.expected_start_date);\n\t\tcur_frm.set_value(\"days\", days);\n\t},\n\t\n\texpected_end_date: function(frm) {\n\t\tvar days = frappe.datetime.get_diff(frm.doc.expected_end_date, frm.doc.expected_start_date);\n\t\tcur_frm.set_value(\"days\", days);\n\t\t\n\t},\n})\n\nfunction calculate_costing(frm) {\n\tfrm.set_value('tax_amount', (flt(frm.doc.project_amount) * (flt(frm.doc.tax) * 0.01)));\n\tfrm.set_value('grand_total', flt(frm.doc.project_amount) + flt(frm.doc.tax_amount));\n\t\n\tvar actual_costing = flt(frm.doc.total_costing_amount)\n\t\t\t    + flt(frm.doc.total_expense_claim)\n\t\t\t    + flt(frm.doc.total_purchase_cost)\n\t\t\t    + flt(frm.doc.total_consumed_material_cost)\n\t\t\t    + flt(frm.doc.total_delivery_cost)\n\t\t\t    + flt(frm.doc.total_expenses)\n\t\t    \n\tfrm.set_value('actual_cost', actual_costing);\n\tfrm.set_value('variance', flt(frm.doc.estimated_costing) - flt(frm.doc.actual_cost));\n    }\n    \n    \ncur_frm.set_query('bank_guarantee', (doc) => {\n\treturn {\n\t\tfilters: {\n\t\t\tproject: doc.name\n\t\t}\n\t}\n})\n\ncur_frm.set_query(\"budget_account\", \"accounts\", function(doc, cdt, cdn){\n\treturn{\n\t\t\"filters\":{\n\t\t\t\"company\": doc.company,\n\t\t\t\"is_group\": 1,\n\t\t\t'root_type': 'Expense'\n\t\t}\n\t};\n});\n\ncur_frm.set_query(\"bank\", function(doc){\n\treturn{\n\t\t\"filters\":{\n\t\t\t'account_type': 'Bank'\n\t\t}\n\t};\n});",
+  "view": "Form"
+ }
+]
