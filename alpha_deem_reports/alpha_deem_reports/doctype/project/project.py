@@ -10,9 +10,8 @@ from frappe.model.document import Document
 from frappe.utils import add_days, flt, get_datetime, get_time, get_url, nowtime, today, date_diff
 
 from erpnext.controllers.queries import get_filters_cond
-from erpnext.education.doctype.student_attendance.student_attendance import get_holiday_list
-from erpnext.hr.doctype.daily_work_summary.daily_work_summary import get_users_email
-from erpnext.hr.doctype.holiday_list.holiday_list import is_holiday
+from hrms.hr.doctype.daily_work_summary.daily_work_summary import get_users_email
+from hrms.hr.doctype.holiday_list.holiday_list import is_holiday
 
 
 class Project(Document):
